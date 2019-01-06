@@ -9,7 +9,7 @@
 IMAGE_NAME=${IMAGE_NAME-centos/php-71-fpm-centos-candidate}
 
 # TODO: Make command compatible for Mac users
-test_dir="$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P | tr \'\\n\' \'\\0\' )"
+test_dir=`cd "$(dirname "${BASH_SOURCE[0]}")"; pwd -P | tr '\n' '\0'`
 echo $test_dir
 image_dir="$( cd "${test_dir}/.." ; pwd -P )"
 
@@ -136,7 +136,7 @@ test_session() {
   local check_protocol=${1:-http}
   cat $cid_file
   info "Testing PHP session"
-  response=$(curl -s -k ${check_protocol}://$(container_ip):${check_port}/session_test.php)
+  response=$(docker run --rm -e SCRIPT_NAME=session_test.php -e SCRIPT_FILENAME=session_test.php -e REQUEST_METHOD=GET ${IMAGE_NAME} cgi-fcgi -bind -connect $(container_ip):${check_port} | grep -i "passed")
   if [ "${response}" != "Passed" ]; then
     echo "ERROR starting PHP session. Test app returned: '${response}'"
     return 1
@@ -147,19 +147,17 @@ test_connection() {
   local check_port=$1 ; shift
   local check_protocol=${1:-http}
   cat $cid_file
-  info "Testing the HTTP connection (${check_protocol}://$(container_ip):${check_port})"
+  info "Testing the FCGI connection ($(container_ip):${check_port})"
   local max_attempts=10
   local sleep_time=1
   local attempt=1
   local result=1
   while [ $attempt -le $max_attempts ]; do
-    response_code=$(curl -s -w %{http_code} -o /dev/null -k ${check_protocol}://$(container_ip):${check_port}/)
-    status=$?
-    if [ $status -eq 0 ]; then
-      if [ $response_code -eq 200 ]; then
-        result=0
-        break
-      fi
+    response=$(docker run --rm ${IMAGE_NAME} cgi-fcgi -bind -connect $(container_ip):${check_port})
+    result=$?
+    echo "Response: ${response}"
+    if [ $result -eq 0 ]; then
+      break
     fi
     attempt=$(( $attempt + 1 ))
     sleep $sleep_time

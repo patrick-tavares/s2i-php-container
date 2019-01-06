@@ -41,7 +41,7 @@ LABEL summary="${SUMMARY}" \
 
 # Install PHP-FPM and PHP
 RUN yum install -y epel-release && \
-    INSTALL_PKGS="rh-php${PHP_VER_SHORT} rh-php${PHP_VER_SHORT}-php-fpm \
+    INSTALL_PKGS="rh-php${PHP_VER_SHORT} rh-php${PHP_VER_SHORT}-php-fpm fcgi \
                   rh-php${PHP_VER_SHORT}-php-mysqlnd rh-php${PHP_VER_SHORT}-php-pgsql \
                   rh-php${PHP_VER_SHORT}-php-bcmath rh-php${PHP_VER_SHORT}-php-gd rh-php${PHP_VER_SHORT}-php-intl \
                   rh-php${PHP_VER_SHORT}-php-ldap rh-php${PHP_VER_SHORT}-php-mbstring rh-php${PHP_VER_SHORT}-php-pdo \
