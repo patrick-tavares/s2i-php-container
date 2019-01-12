@@ -7,7 +7,7 @@ config_php_fpm_conf() {
   sed -i "s/^;access.format =/access.format =/" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
   sed -i "s/^user = apache/;user = apache/" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
   sed -i "s/^group = apache/;group = apache/" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s/^listen = 127.0.0.1:9000/listen = 9000/" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
+  sed -i "s/^listen = .*/listen = 9000/" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
   sed -i "s/^listen.allowed_clients/;listen.allowed_clients/" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
   sed -i "s%^;ping.path = /ping%ping.path = /ping%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
   sed -i "s%^;catch_workers_output = yes%catch_workers_output = yes%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}

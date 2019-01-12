@@ -6,7 +6,8 @@
 # IMAGE_NAME specifies a name of the candidate image used for testing.
 # The image has to be available before this script is executed.
 #
-IMAGE_NAME=${IMAGE_NAME-centos/php-71-fpm-centos-candidate}
+IMAGE_NAME=${IMAGE_NAME:-centos/php-71-fpm-centos-candidate}
+echo "Using IMAGE_NAME: ${IMAGE_NAME}"
 
 # TODO: Make command compatible for Mac users
 test_dir=`cd "$(dirname "${BASH_SOURCE[0]}")"; pwd -P | tr '\n' '\0'`
