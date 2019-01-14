@@ -21,7 +21,7 @@ a database-enabled webpage with PHP is fairly simple. The most common use of PHP
 is probably as a replacement for CGI scripts.
 
 This container image will serve your PHP code via the PHP FastCGI Process Manager (PHP-FPM)
-and can be used in conjunction with a separate web server container such as Apache or Nginx.
+and is meant to be used in conjunction with a separate web server container such as Apache or Nginx.
 
 This container image includes an npm utility, so users can use it to install JavaScript
 modules for their web applications. There is no guarantee for any specific npm or nodejs
@@ -30,25 +30,32 @@ the nodejs itself is included just to make the npm work.
 
 Usage
 ---------------------
-To build a simple [php-test-app](https://github.com/sclorg/s2i-php-container/tree/master/7.1_fpm/test/test-app) application
+To build a simple [php-test-app](https://github.com/sclorg/s2i-php-container/tree/master/7.1-fpm/test/test-app) application
 using standalone [S2I](https://github.com/openshift/source-to-image) and then run the
 resulting image with [Docker](http://docker.io) execute:
 
 *  **For RHEL based image**
     ```
-    $ s2i build https://github.com/sclorg/s2i-php-container.git --context-dir=7.1_fpm/test/test-app rhscl/php-fpm-71-rhel7 php-test-app
-    $ docker run -p 9000:9000 php-test-app
+    $ s2i build https://github.com/sclorg/s2i-php-container.git --context-dir=7.1-fpm/test/test-app rhscl/php-fpm-71-rhel7 php-test-app
+    $ docker run -d --name=php-fpm-test-app -p 9000:9000 php-test-app
     ```
 
 *  **For CentOS based image**
     ```
-    $ s2i build https://github.com/sclorg/s2i-php-container.git --context-dir=7.1_fpm/test/test-app centos/php-fpm-71-centos7 php-test-app
-    $ docker run -p 9000:9000 php-test-app
+    $ s2i build https://github.com/sclorg/s2i-php-container.git --context-dir=7.1-fpm/test/test-app centos/php-fpm-71-centos7 php-test-app
+    $ docker run -d --name=php-fpm-test-app -p 9000:9000 php-test-app
     ```
 
 **Accessing the application:**
+FastCGI is a binary protocol. In order to access the application, you will either need to make use of a properly configured Apache or
+Nginx (or other HTTP server) container or make use of a tool such as cgi-fcgi.
+
+To test with cgi-fcgi:
 ```
-$ curl 127.0.0.1:9000
+$ docker run --name php-fpm-tester -itd centos/s2i-base-centos7 /bin/bash
+$ docker exec php-fpm-tester rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+$ docker exec php-fpm-tester yum -y install fcgi
+$ docker exec -e SCRIPT_NAME=index.php -e SCRIPT_FILENAME=index.php -e REQUEST_METHOD=GET php-fpm-tester cgi-fcgi -bind -connect `docker inspect --format="{{ .NetworkSettings.IPAddress }}" php-fpm-test-app`:9000
 ```
 
 Environment variables
@@ -118,23 +125,6 @@ You can also override the entire directory used to load the PHP configuration by
 * **PHP_INI_SCAN_DIR**
   * Path to scan for additional ini configuration files
 
-You can override the Apache [MPM prefork](https://httpd.apache.org/docs/2.4/mod/mpm_common.html)
-settings to increase the performance for of the PHP application. In case you set
-the Cgroup limits in Docker, the image will attempt to automatically set the
-optimal values. You can override this at any time by specifying the values
-yourself:
-
-* **HTTPD_START_SERVERS**
-  * The [StartServers](https://httpd.apache.org/docs/2.4/mod/mpm_common.html#startservers)
-    directive sets the number of child server processes created on startup.
-  * Default: 8
-* **HTTPD_MAX_REQUEST_WORKERS**
-  * The [MaxRequestWorkers](https://httpd.apache.org/docs/2.4/mod/mpm_common.html#maxrequestworkers)
-    directive sets the limit on the number of simultaneous requests that will be served.
-  * `MaxRequestWorkers` was called `MaxClients` before version httpd 2.3.13.
-  * Default: 256 (this is automatically tuned by setting Cgroup limits for the container using this formula:
-    `TOTAL_MEMORY / 15MB`. The 15MB is average size of a single httpd process.
-
   You can use a custom composer repository mirror URL to download packages instead of the default 'packagist.org':
 
     * **COMPOSER_MIRROR**
@@ -157,20 +147,13 @@ However, if these files exist they will affect the behavior of the build process
   [here](https://getcomposer.org/doc/04-schema.md).
 
 
-* **.htaccess**
-
-  In case the **DocumentRoot** of the application is nested within the source directory `/opt/app-root/src`,
-  users can provide their own Apache **.htaccess** file.  This allows the overriding of Apache's behavior and
-  specifies how application requests should be handled. The **.htaccess** file needs to be located at the root
-  of the application source.
-
 Hot deploy
 ---------------------
 
 In order to immediately pick up changes made in your application source code, you need to run your built image with the `OPCACHE_REVALIDATE_FREQ=0` environment variable passed to the [Docker](http://docker.io) `-e` run flag:
 
 ```
-$ docker run -e OPCACHE_REVALIDATE_FREQ=0 -p 8080:8080 php-app
+$ docker run -e OPCACHE_REVALIDATE_FREQ=0 -p 9000:9000 php-app
 ```
 
 To change your source code in running container, use Docker's [exec](http://docker.io) command:
@@ -191,9 +174,7 @@ The structure of the application can look like this:
 
 | Folder name       | Description                |
 |-------------------|----------------------------|
-| `./httpd-cfg`     | Can contain additional Apache configuration files (`*.conf`)|
-| `./httpd-ssl`     | Can contain own SSL certificate (in `certs/` subdirectory) and key (in `private/` subdirectory)|
-| `./php-pre-start`| Can contain shell scripts (`*.sh`) that are sourced before `httpd` is started|
+| `./php-pre-start`| Can contain shell scripts (`*.sh`) that are sourced before `php-fpm` is started|
 | `./php-post-assemble`| Can contain shell scripts (`*.sh`) that are sourced at the end of `assemble` script|
 | `./`              | Application source code |
 
@@ -207,6 +188,6 @@ Dockerfile for CentOS is called Dockerfile, Dockerfile for RHEL is called Docker
 Security Implications
 ---------------------
 
--p 8080:8080
+-p 9000:9000
 
-     Opens  container  port  8080  and  maps it to the same port on the Host.
+     Opens  container  port  9000  and  maps it to the same port on the Host.
