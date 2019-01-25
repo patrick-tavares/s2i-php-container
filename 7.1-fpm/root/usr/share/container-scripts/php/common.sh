@@ -4,7 +4,7 @@ config_php_fpm_conf() {
   sed -i "s/^;systemd_interval = 10/systemd_interval = 0/" ${PHP_SYSCONF_PATH}/${PHP_FPM_CONF_FILE}
   sed -i "s%^;access.log = log/\$pool.access.log%access.log = /proc/self/fd/2%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
   sed -i "s%^slowlog = ${PHP_VAR_PATH}/log/php-fpm/www-slow.log%slowlog = /proc/self/fd/2%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s/^;access.format =/access.format =/" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
+  sed -i 's#^;access.format = .*#access.format = "[%t] %m %{REQUEST_SCHEME}e://%{HTTP_HOST}e%{REQUEST_URI}e %f pid:%p took:%ds mem:%{mega}Mmb cpu:%C%% status:%s {%{REMOTE_ADDR}e|%{HTTP_USER_AGENT}e}"#' ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
   sed -i "s/^user = apache/;user = apache/" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
   sed -i "s/^group = apache/;group = apache/" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
   sed -i "s/^listen = .*/listen = 9000/" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
