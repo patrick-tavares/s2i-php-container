@@ -15,6 +15,7 @@ config_php_fpm_conf() {
   sed -i "s%^;php_value\[soap.wsdl_cache_dir\].*= ${PHP_VAR_PATH}/lib/php/wsdlcache%php_admin_value\[soap.wsdl_cache_dir\] = /tmp/wsdlcache%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
   sed -i "s%^;php_value\[opcache.file_cache\].*= ${PHP_VAR_PATH}/lib/php/opcache%php_admin_value\[opcache.file_cache\] = /tmp/opcache%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
   sed -i "s%^php_admin_value\[error_log\].*= ${PHP_VAR_PATH}/log/php-fpm/www-error.log%php_admin_value\[error_log\] = /proc/self/fd/2%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
+  sed -i "s%^;php_admin_value\[display_errors\].*no%php_admin_value\[display_errors\] = no%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
   sed -i "s%^;pm.status_path = /status%pm.status_path = /status%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
 }
 
