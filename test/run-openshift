@@ -11,7 +11,7 @@ THISDIR=$(dirname ${BASH_SOURCE[0]})
 source ${THISDIR}/test-lib.sh
 source ${THISDIR}/test-lib-openshift.sh
 
-GIT_REPO="${GIT_REPO:-'https://github.com/sclorg/s2i-php-container.git'}"
+GIT_REPO="${GIT_REPO:-https://github.com/sclorg/s2i-php-container.git}"
 echo "Git Repo being used: ${GIT_REPO}"
 # change the branch to a different value if a new change in the example
 # app needs to be tested
