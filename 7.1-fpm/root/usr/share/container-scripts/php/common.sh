@@ -1,22 +1,10 @@
 config_php_fpm_conf() {
-  sed -i "s%^error_log = ${PHP_VAR_PATH}/log/php-fpm/error.log%error_log = /proc/self/fd/2%" ${PHP_SYSCONF_PATH}/${PHP_FPM_CONF_FILE}
-  sed -i "s/^daemonize = yes/daemonize = no/" ${PHP_SYSCONF_PATH}/${PHP_FPM_CONF_FILE}
-  sed -i "s/^;systemd_interval = 10/systemd_interval = 0/" ${PHP_SYSCONF_PATH}/${PHP_FPM_CONF_FILE}
-  sed -i "s%^;access.log = log/\$pool.access.log%access.log = /proc/self/fd/2%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s%^slowlog = ${PHP_VAR_PATH}/log/php-fpm/www-slow.log%slowlog = /proc/self/fd/2%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i 's#^;access.format = .*#access.format = "[%t] %m %{REQUEST_SCHEME}e://%{HTTP_HOST}e%{REQUEST_URI}e %f pid:%p took:%ds mem:%{mega}Mmb cpu:%C%% status:%s {%{REMOTE_ADDR}e|%{HTTP_USER_AGENT}e}"#' ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s/^user = apache/;user = apache/" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s/^group = apache/;group = apache/" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s/^listen = .*/listen = 9000/" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s/^listen.allowed_clients/;listen.allowed_clients/" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s%^;ping.path = /ping%ping.path = /ping%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s%^;catch_workers_output = yes%catch_workers_output = yes%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s%^php_value\[session.save_path\].*= ${PHP_VAR_PATH}/lib/php/session%php_admin_value\[session.save_path\] = /tmp/session%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s%^;php_value\[soap.wsdl_cache_dir\].*= ${PHP_VAR_PATH}/lib/php/wsdlcache%php_admin_value\[soap.wsdl_cache_dir\] = /tmp/wsdlcache%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s%^;php_value\[opcache.file_cache\].*= ${PHP_VAR_PATH}/lib/php/opcache%php_admin_value\[opcache.file_cache\] = /tmp/opcache%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s%^php_admin_value\[error_log\].*= ${PHP_VAR_PATH}/log/php-fpm/www-error.log%php_admin_value\[error_log\] = /proc/self/fd/2%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s%^;php_flag\[display_errors\].*off%php_admin_value\[display_errors\] = off%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
-  sed -i "s%^;pm.status_path = /status%pm.status_path = /status%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
+  sed -i "s%^[; ]*error_log = ${PHP_VAR_PATH}/log/php-fpm/error.log%error_log = /proc/self/fd/2%" ${PHP_SYSCONF_PATH}/${PHP_FPM_CONF_FILE}
+  sed -i "s/^[; ]*daemonize = yes/daemonize = no/" ${PHP_SYSCONF_PATH}/${PHP_FPM_CONF_FILE}
+  sed -i "s/^[; ]*systemd_interval = 10/systemd_interval = 0/" ${PHP_SYSCONF_PATH}/${PHP_FPM_CONF_FILE}
+  sed -i "s%^[; ]*access.log = log/\$pool.access.log%access.log = /proc/self/fd/2%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
+  sed -i "s%^[; ]*slowlog = ${PHP_VAR_PATH}/log/php-fpm/www-slow.log%slowlog = /proc/self/fd/2%" ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
+  sed -i 's#^[; ]*access.format = .*#access.format = "[%t] %m %{REQUEST_SCHEME}e://%{HTTP_HOST}e%{REQUEST_URI}e %f pid:%p took:%ds mem:%{mega}Mmb cpu:%C%% status:%s {%{REMOTE_ADDR}e|%{HTTP_USER_AGENT}e}"#' ${PHP_FPM_CONFIGURATION_PATH}/${PHP_FPM_WWW_POOL_CONF_FILE}
 }
 
 config_general() {

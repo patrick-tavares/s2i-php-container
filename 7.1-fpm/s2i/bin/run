@@ -9,6 +9,7 @@ export DOCUMENTROOT=${DOCUMENTROOT:-/}
 # from php defaults.
 export ERROR_REPORTING=${ERROR_REPORTING:-E_ALL & ~E_NOTICE}
 export DISPLAY_ERRORS=${DISPLAY_ERRORS:-ON}
+export LOG_ERRORS=${LOG_ERRORS:-ON}
 export DISPLAY_STARTUP_ERRORS=${DISPLAY_STARTUP_ERRORS:-OFF}
 export TRACK_ERRORS=${TRACK_ERRORS:-OFF}
 export HTML_ERRORS=${HTML_ERRORS:-ON}
@@ -22,6 +23,18 @@ export SESSION_COOKIE_HTTPONLY=${SESSION_COOKIE_HTTPONLY:-}
 export SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE:-0}
 export SHORT_OPEN_TAG=${SHORT_OPEN_TAG:-OFF}
 
+# PHP-FPM Environment Variables
+export PM_MODE=${PM_MODE:-ondemand}
+export PM_MAX_CHILDREN=${PM_MAX_CHILDREN:-10}
+export PM_START_SERVERS=${PM_START_SERVERS:-5}
+export PM_MIN_SPARE_SERVERS=${PM_MIN_SPARE_SERVERS:-5}
+export PM_MAX_SPARE_SERVERS=${PM_MAX_SPARE_SERVERS:-10}
+export PM_PROCESS_IDLE_TIMEOUT=${PM_PROCESS_IDLE_TIMEOUT:-10s}
+export PM_MAX_REQUESTS=${PM_MAX_REQUESTS:-0}
+
+export WSDL_CACHE_DIR=${WSDL_CACHE_DIR:-/tmp/wsdlcache}
+export OPCACHE_FILE_CACHE=${OPCACHE_FILE_CACHE:-/tmp/opcache}
+
 # TODO should be dynamically calculated based on container memory limit/16
 export OPCACHE_MEMORY_CONSUMPTION=${OPCACHE_MEMORY_CONSUMPTION:-128}
 
@@ -32,6 +45,7 @@ export PHP_INI_SCAN_DIR=${PHP_INI_SCAN_DIR:-${PHP_SYSCONF_PATH}/php.d}
 
 envsubst < /opt/app-root/etc/php.ini.template > ${PHP_SYSCONF_PATH}/php.ini
 envsubst < /opt/app-root/etc/php.d/10-opcache.ini.template > ${PHP_SYSCONF_PATH}/php.d/10-opcache.ini
+envsubst < /opt/app-root/etc/php-fpm.d/www.conf.template > ${PHP_SYSCONF_PATH}/php-fpm.d/www.conf
 
 
 # pre-start files

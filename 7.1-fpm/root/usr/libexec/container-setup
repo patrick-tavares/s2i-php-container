@@ -16,7 +16,7 @@ mkdir -p ${APP_ROOT}/etc
 chmod -R a+rwx ${APP_ROOT}/etc
 chmod -R a+rwx ${PHP_FPM_RUN}
 chown -R 1001:0 ${APP_ROOT}
-mkdir -p /tmp/session
+mkdir -p /tmp/sessions
 mkdir -p /tmp/wsdlcache
 mkdir -p /tmp/opcache
 chmod -R a+rwx /tmp/session /tmp/wsdlcache /tmp/opcache
