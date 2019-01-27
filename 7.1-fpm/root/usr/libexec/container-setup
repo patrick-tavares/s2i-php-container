@@ -19,8 +19,8 @@ chown -R 1001:0 ${APP_ROOT}
 mkdir -p /tmp/sessions
 mkdir -p /tmp/wsdlcache
 mkdir -p /tmp/opcache
-chmod -R a+rwx /tmp/session /tmp/wsdlcache /tmp/opcache
-chown -R 1001:0 /tmp/session /tmp/wsdlcache /tmp/opcache
+chmod -R a+rwx /tmp/sessions /tmp/wsdlcache /tmp/opcache
+chown -R 1001:0 /tmp/sessions /tmp/wsdlcache /tmp/opcache
 chmod -R a+rwx ${PHP_SYSCONF_PATH}
 
 
