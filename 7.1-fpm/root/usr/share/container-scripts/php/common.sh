@@ -56,9 +56,9 @@ function process_extending_config_files() {
     echo "=> sourcing $filename ..."
     # Custom file is prefered
     if [ -f $custom_dir/$filename ]; then
-       envsubst < $custom_dir/$filename > ${HTTPD_CONFIGURATION_PATH}/$filename
+       envsubst < $custom_dir/$filename > ${PHP_FPM_CONFIGURATION_PATH}/$filename
     elif [ -f $default_dir/$filename ]; then
-       envsubst < $default_dir/$filename > ${HTTPD_CONFIGURATION_PATH}/$filename
+       envsubst < $default_dir/$filename > ${PHP_FPM_CONFIGURATION_PATH}/$filename
     fi
   done <<<"$(get_matched_files "$custom_dir" "$default_dir" '*.conf' | sort -u)"
 }
