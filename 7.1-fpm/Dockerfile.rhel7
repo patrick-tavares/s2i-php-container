@@ -36,7 +36,7 @@ LABEL summary="${SUMMARY}" \
       com.redhat.component="rh-${NAME}${PHP_VER_SHORT}-fpm-container" \
       version="${PHP_VERSION}" \
       help="For more information visit https://github.com/sclorg/s2i-${NAME}-container" \
-      usage="s2i build https://github.com/sclorg/s2i-php-container.git --context-dir=${PHP_VERSION}_fpm/test/test-app rhscl/${NAME}-${PHP_VER_SHORT}-fpm-rhel7 sample-server" \
+      usage="s2i build https://github.com/sclorg/s2i-php-container.git --context-dir=${PHP_VERSION}-fpm/test/test-app rhscl/${NAME}-${PHP_VER_SHORT}-fpm-rhel7 sample-server" \
       maintainer="SoftwareCollections.org <sclorg@redhat.com>"
 
 # Install PHP-FPM and PHP.
