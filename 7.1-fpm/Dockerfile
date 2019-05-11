@@ -45,7 +45,8 @@ RUN INSTALL_PKGS="rh-php${PHP_VER_SHORT} rh-php${PHP_VER_SHORT}-php-fpm \
                   rh-php${PHP_VER_SHORT}-php-bcmath rh-php${PHP_VER_SHORT}-php-gd rh-php${PHP_VER_SHORT}-php-intl \
                   rh-php${PHP_VER_SHORT}-php-ldap rh-php${PHP_VER_SHORT}-php-mbstring rh-php${PHP_VER_SHORT}-php-pdo \
                   rh-php${PHP_VER_SHORT}-php-process rh-php${PHP_VER_SHORT}-php-soap rh-php${PHP_VER_SHORT}-php-opcache \
-                  rh-php${PHP_VER_SHORT}-php-xml rh-php${PHP_VER_SHORT}-php-gmp rh-php${PHP_VER_SHORT}-php-pecl-apcu" && \
+                  rh-php${PHP_VER_SHORT}-php-xml rh-php${PHP_VER_SHORT}-php-gmp rh-php${PHP_VER_SHORT}-php-pecl-apcu \
+                  rh-php${PHP_VER_SHORT}-php-pecl-imagick" && \
     yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS --nogpgcheck && \
     rpm -V $INSTALL_PKGS && \
     yum clean all -y
