@@ -1,0 +1,29 @@
+#!/bin/bash
+
+set -e
+
+# In order to drop the root user, we have to make some directories world
+# writeable as OpenShift default security model is to run the container under
+# random UID.
+
+source ${PHP_CONTAINER_SCRIPTS_PATH}/common.sh
+
+if [ -z SCL_ENABLED ] ; then
+  rm -f /opt/app-root/etc/scl_enable
+fi
+
+mkdir -p ${APP_ROOT}/etc
+chmod -R a+rwx ${APP_ROOT}/etc
+chmod -R a+rwx ${PHP_FPM_RUN}
+chown -R 1001:0 ${APP_ROOT}
+mkdir -p /tmp/sessions
+mkdir -p /tmp/wsdlcache
+mkdir -p /tmp/opcache
+chmod -R a+rwx /tmp/sessions /tmp/wsdlcache /tmp/opcache
+chown -R 1001:0 /tmp/sessions /tmp/wsdlcache /tmp/opcache
+chmod -R a+rwx ${PHP_SYSCONF_PATH}
+
+
+mkdir -p ${PHP_CONTAINER_SCRIPTS_PATH}/pre-init
+
+config_general
