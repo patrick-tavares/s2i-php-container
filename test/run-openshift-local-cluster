@@ -10,21 +10,23 @@ THISDIR=$(dirname ${BASH_SOURCE[0]})
 
 source ${THISDIR}/test-lib.sh
 source ${THISDIR}/test-lib-openshift.sh
+source ${THISDIR}/test-lib-php.sh
 
-GIT_REPO="${GIT_REPO:-https://github.com/sclorg/s2i-php-container.git}"
-echo "Git Repo being used: ${GIT_REPO}"
 # change the branch to a different value if a new change in the example
 # app needs to be tested
 BRANCH_TO_TEST=master
 
 set -eo nounset
 
-test -n "${IMAGE_NAME-}" || false 'make sure $IMAGE_NAME is defined'
-test -n "${VERSION-}" || false 'make sure $VERSION is defined'
-test -n "${OS-}" || false 'make sure $OS is defined'
+trap ct_os_cleanup EXIT SIGINT
+
+ct_os_check_compulsory_vars
+
+ct_os_enable_print_logs
+
 istag="php:$VERSION"
 
-# DeterTesting the HTTP(S) response formine whether or not we will perform a binary fpm test
+# Determine whether or not we will perform a binary fpm test
 IS_FPM=false
 if [[ $VERSION == *"fpm"* ]]; then
   IS_FPM=true
@@ -44,6 +46,7 @@ function test_file_upload() {
 
   ct_os_deploy_s2i_image "$istag" "$app" --name "${service_name}"
   ct_os_wait_pod_ready "$service_name" 60
+
 
   ip=$(ct_os_get_service_ip "$service_name")
 
@@ -163,20 +166,28 @@ if [[ "${VERSION}" > "5.6" && ! $IS_FPM ]] ; then
                         https://raw.githubusercontent.com/sclorg/cakephp-ex/${BRANCH_TO_TEST}/openshift/templates/cakephp.json \
                         php \
                         'Welcome to your CakePHP application on OpenShift' \
-                        8080 http 200 "-p SOURCE_REPOSITORY_REF=${BRANCH_TO_TEST} -p SOURCE_REPOSITORY_URL=https://github.com/sclorg/cakephp-ex.git -p PHP_VERSION=${VERSION%%[-a-zA-Z]*} -p NAME=php-testing"
+                        8080 http 200 "-p SOURCE_REPOSITORY_REF=${BRANCH_TO_TEST} -p SOURCE_REPOSITORY_URL=https://github.com/sclorg/cakephp-ex.git -p PHP_VERSION=${VERSION} -p NAME=php-testing"
 fi
 
-# test image update with s2ideploy_cmd_image
-case "$OS" in
-  rhel7) old_image=rhscl/php-${VERSION/./}-rhel7 ;;
-# Fedora image isn't in registry yet
-#  fedora) old_image=${IMAGE_NAME/localhost\//}
-  *) old_image=centos/php-${VERSION/./}-centos7 ;;
-esac
+# test image update with s2i
+old_image=$(ct_get_public_image_name "$OS" "$BASE_IMAGE_NAME" "$VERSION")
 
-ct_os_test_image_update "$IMAGE_NAME" "${old_image}" "$istag" \
-                        "${ct_image_update_response_test}" \
-                        "$istag~${GIT_REPO}" \
-                        --context-dir="$VERSION/test/test-app"
+if ct_check_image_availability "$old_image"; then
+  ct_os_test_image_update "$IMAGE_NAME" "${old_image}" "$istag" \
+                          'ct_test_response "http://<IP>:8080" "200" "Test PHP passed"' \
+                          "$istag~https://github.com/sclorg/s2i-php-container.git" \
+                          --context-dir="$VERSION/test/test-app"
+else
+  echo "Image $old_image not found in public repositories, skipping update test."
+fi
 
 test_file_upload "$IMAGE_NAME"
+
+# Check the imagestream
+test_php_imagestream
+
+OS_TESTSUITE_RESULT=0
+
+ct_os_cluster_down
+
+# vim: set tabstop=2:shiftwidth=2:expandtab:
