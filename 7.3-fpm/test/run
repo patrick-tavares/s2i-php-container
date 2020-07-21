@@ -6,7 +6,7 @@
 # IMAGE_NAME specifies a name of the candidate image used for testing.
 # The image has to be available before this script is executed.
 #
-IMAGE_NAME=${IMAGE_NAME:-centos/php-71-fpm-centos-candidate}
+IMAGE_NAME=${IMAGE_NAME:-centos/php-73-fpm-centos-candidate}
 echo "Using IMAGE_NAME: ${IMAGE_NAME}"
 
 # TODO: Make command compatible for Mac users
@@ -32,7 +32,9 @@ container_exists() {
 }
 
 container_ip() {
-  docker inspect --format="{{ .NetworkSettings.IPAddress }}" $(cat $cid_file)
+  IP=`docker inspect --format="{{ .NetworkSettings.IPAddress }}" $(cat $cid_file)`
+  IP=${IP:-"127.0.0.1"}
+  echo $IP
 }
 
 run_s2i_build() {
@@ -56,13 +58,15 @@ prepare() {
 
 run_test_application() {
   run_args=${CONTAINER_ARGS:-}
-  docker run --user=100001 ${run_args} --cidfile=${cid_file} ${IMAGE_NAME}-testapp
+  # Need to run docker with network=host flag to ensure proper cross container testing.
+  docker run -d --network="host" --user=1001 -p ${test_port}:${test_port} ${run_args} --cidfile=${cid_file} ${IMAGE_NAME}-testapp
 }
 
 run_test_container() {
   # Run a base Centos image to test the PHP-FPM image
   # This image will have the EPEL repo added and fcgi pkg installed for testing only
-  docker run -d -it --cidfile=${test_cid_file} centos/s2i-base-centos7 /bin/bash
+  # Need to run docker with network=host flag to ensure proper cross container testing.
+  docker run -d --network="host" -it --cidfile=${test_cid_file} centos/s2i-base-centos7 /bin/bash
 }
 
 cleanup_test_app() {
@@ -136,17 +140,20 @@ test_scl_usage() {
   local run_cmd="$1"
   local expected="$2"
 
-  info "Testing the image SCL enable"
+  info "Testing the image SCL enable [docker run]"
   out=$(docker run --rm ${IMAGE_NAME} /bin/bash -c "${run_cmd}")
   if ! echo "${out}" | grep -q "${expected}"; then
     echo "ERROR[/bin/bash -c "${run_cmd}"] Expected '${expected}', got '${out}'"
     return 1
   fi
+  info "Testing the image SCL enable [docker exec bash]"
+  info "CID_FILE: ${cid_file}"
   out=$(docker exec $(cat ${cid_file}) /bin/bash -c "${run_cmd}" 2>&1)
   if ! echo "${out}" | grep -q "${expected}"; then
     echo "ERROR[exec /bin/bash -c "${run_cmd}"] Expected '${expected}', got '${out}'"
     return 1
   fi
+  info "Testing the image SCL enable [docker exec sh]"
   out=$(docker exec $(cat ${cid_file}) /bin/sh -ic "${run_cmd}" 2>&1)
   if ! echo "${out}" | grep -q "${expected}"; then
     echo "ERROR[exec /bin/sh -ic "${run_cmd}"] Expected '${expected}', got '${out}'"
@@ -215,17 +222,18 @@ test_application() {
   wait_for_cid
   wait_for_test_cid
 
-  test_scl_usage "php --version" "7.1"
+  test_scl_usage "php --version" "7.3"
   check_result $?
 
   install_fcgi_on_test_container
   check_result $?
 
+  test_connection ${test_port}
+  check_result $?
+
   test_session ${test_port}
   check_result $?
 
-  test_connection ${test_port}
-  check_result $?
   cleanup_test_app
 }
 
