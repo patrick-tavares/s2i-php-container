@@ -1,4 +1,4 @@
-FROM centos/s2i-base-centos7
+FROM ubi8/s2i-base
 
 # Description
 # This image provides a standalone PHP 7.4 + PHP-FPM environment for running PHP applications
@@ -12,8 +12,7 @@ EXPOSE 9000
 
 ENV PHP_VERSION=7.4 \
     PHP_VER_SHORT=74 \
-    NAME=php \
-    PATH=$PATH:/opt/rh/rh-php74/root/usr/bin
+    NAME=php
 
 ENV SUMMARY="Platform for building and running PHP $PHP_VERSION applications" \
     DESCRIPTION="PHP $PHP_VERSION, running inside PHP-FPM, available as a container, \
@@ -32,32 +31,28 @@ LABEL summary="${SUMMARY}" \
       io.openshift.tags="builder,${NAME},${NAME}${PHP_VER_SHORT},rh-${NAME}${PHP_VER_SHORT},${name}-fpm" \
       io.openshift.s2i.scripts-url="image:///usr/libexec/s2i" \
       io.s2i.scripts-url="image:///usr/libexec/s2i" \
-      name="centos/${NAME}-${PHP_VER_SHORT}-fpm-centos7" \
+      name="ubi8/${NAME}-${PHP_VER_SHORT}-fpm-ubi8" \
       com.redhat.component="rh-${NAME}${PHP_VER_SHORT}-fpm-container" \
       version="${PHP_VERSION}" \
       help="For more information visit https://github.com/sclorg/s2i-${NAME}-container" \
-      usage="s2i build https://github.com/sclorg/s2i-php-container.git --context-dir=${PHP_VERSION}-fpm/test/test-app centos/${NAME}-${PHP_VER_SHORT}-fpm-centos7 sample-server" \
+      usage="s2i build https://github.com/sclorg/s2i-php-container.git --context-dir=${PHP_VERSION}-fpm/test/test-app ubi8/${NAME}-${PHP_VER_SHORT}-fpm-ubi8 sample-server" \
       maintainer="SoftwareCollections.org <sclorg@redhat.com>"
 
 # Install PHP-FPM and PHP
-RUN INSTALL_PKGS="rh-php${PHP_VER_SHORT} rh-php${PHP_VER_SHORT}-php-fpm \
-                  rh-php${PHP_VER_SHORT}-php-mysqlnd rh-php${PHP_VER_SHORT}-php-pgsql \
-                  rh-php${PHP_VER_SHORT}-php-bcmath rh-php${PHP_VER_SHORT}-php-gd rh-php${PHP_VER_SHORT}-php-intl \
-                  rh-php${PHP_VER_SHORT}-php-ldap rh-php${PHP_VER_SHORT}-php-mbstring rh-php${PHP_VER_SHORT}-php-pdo \
-                  rh-php${PHP_VER_SHORT}-php-process rh-php${PHP_VER_SHORT}-php-soap rh-php${PHP_VER_SHORT}-php-opcache \
-                  rh-php${PHP_VER_SHORT}-php-xml rh-php${PHP_VER_SHORT}-php-gmp rh-php${PHP_VER_SHORT}-php-pecl-apcu" && \
-    yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS rh-php${PHP_VER_SHORT}-php-pecl-imagick --nogpgcheck && \
+RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm https://rpms.remirepo.net/enterprise/remi-release-8.rpm && \
+    yum module install -y php:remi-$PHP_VERSION && \
+    INSTALL_PKGS="php \
+                  php-mysqlnd \
+                  php-pecl-gmagick" && \
+    yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
     rpm -V $INSTALL_PKGS && \
-    yum clean all -y
-
-ENV PHP_DEFAULT_BASE_PATH=/opt/rh/rh-php${PHP_VER_SHORT}
+    yum clean all
 
 ENV APP_DATA=${APP_ROOT}/src \
     PHP_CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/php/ \
-    PHP_DEFAULT_INCLUDE_PATH=${PHP_DEFAULT_BASE_PATH}/root/usr/share/pear \
-    PHP_SYSCONF_PATH=/etc${PHP_DEFAULT_BASE_PATH} \
-    PHP_VAR_PATH=/var${PHP_DEFAULT_BASE_PATH} \
-    SCL_ENABLED=rh-php${PHP_VER_SHORT}
+    PHP_DEFAULT_INCLUDE_PATH=/usr/share/pear \
+    PHP_SYSCONF_PATH=/etc \
+    PHP_VAR_PATH=/var
 
 ENV PHP_FPM_CONFIGURATION_PATH=${PHP_SYSCONF_PATH}/php-fpm.d \
     PHP_FPM_RUN=${PHP_VAR_PATH}/run/php-fpm \
@@ -71,7 +66,8 @@ COPY ./s2i/bin/ $STI_SCRIPTS_PATH
 COPY ./root/ /
 
 # Reset permissions of filesystem to default values
-RUN /usr/libexec/container-setup && rpm-file-permissions
+RUN chmod 777 /usr/libexec/container-setup && \
+    /usr/libexec/container-setup && rpm-file-permissions
 
 USER 1001
 
