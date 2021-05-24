@@ -1,4 +1,4 @@
-FROM ubi8/s2i-base
+FROM registry.access.redhat.com/ubi8/s2i-base
 
 # Description
 # This image provides a standalone PHP 7.4 + PHP-FPM environment for running PHP applications
