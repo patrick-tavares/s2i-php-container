@@ -43,6 +43,7 @@ RUN rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.
     yum module install -y php:remi-$PHP_VERSION && \
     INSTALL_PKGS="php \
                   php-mysqlnd \
+                  php-opcache php-soap \
                   php-pecl-gmagick" && \
     yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
     rpm -V $INSTALL_PKGS && \
@@ -55,7 +56,7 @@ ENV APP_DATA=${APP_ROOT}/src \
     PHP_VAR_PATH=/var
 
 ENV PHP_FPM_CONFIGURATION_PATH=${PHP_SYSCONF_PATH}/php-fpm.d \
-    PHP_FPM_RUN=${PHP_VAR_PATH}/run/php-fpm \
+    PHP_FPM_RUN=/run/php-fpm \
     PHP_FPM_CONF_FILE=php-fpm.conf \
     PHP_FPM_WWW_POOL_CONF_FILE=www.conf
 
@@ -66,8 +67,7 @@ COPY ./s2i/bin/ $STI_SCRIPTS_PATH
 COPY ./root/ /
 
 # Reset permissions of filesystem to default values
-RUN chmod 777 /usr/libexec/container-setup && \
-    /usr/libexec/container-setup && rpm-file-permissions
+RUN /usr/libexec/container-setup && rpm-file-permissions
 
 USER 1001
 
